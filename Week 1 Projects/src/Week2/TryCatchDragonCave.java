@@ -1,3 +1,5 @@
+package Week2;
+
 import java.util.Random;
 import java.util.Scanner;
 
@@ -6,7 +8,7 @@ import java.util.Scanner;
 //Dragon Cave
 //Current bug if someone doesn't enter in a 1 or 2
 
-public class DragonCave {
+public class TryCatchDragonCave {
     public static void main(String[] args) throws Exception {
         /*In this game, the player is in a land full of dragons. The dragons all live in caves
          * with their large piles o collected treasure. Some dragons are friendly and share their
@@ -33,7 +35,10 @@ public class DragonCave {
         Thread.sleep(2000);
         
         //Get the input from the user, ensure that they are giving either a 1 or a 2, otherwise tell them to input again
-        int dec;
+        int dec = 0;
+
+
+        /*
         do {
             System.out.println("Which cave will you go into? (1 or 2)");
 			while (!sc.hasNextInt()) {
@@ -41,15 +46,28 @@ public class DragonCave {
 				sc.next();
 			}
 			dec = sc.nextInt();
-			if (dec == 1 || dec == 2) {
-				break;
-			}
-		} while (dec != 1 || dec != 2);
+		} while (dec == 1 && dec == 2);
         System.out.println();
+        */
+
+        do {
+            System.out.println("Which cave will you go into? (1 or 2)");
+            try {
+                dec = sc.nextInt();
+                if (dec != 1 && dec !=2){ // if dec is not 1 or 2, do this
+                    System.out.println("Invalid input, please enter '1' or '2'.");
+                }
+            }catch(Exception ex){  //if exception in the try
+                sc.next();
+                System.out.println("Invalid input, please enter '1' or '2'.");
+            }
+        }while(dec != 1 && dec != 2); //do this until a valid answer is given
+        
         
         //make the hungry dragon random number between 1 and 2, so the user can never guess the 
         //friendly dragon dragon even after multiple attempts
-        int hunDragon = (int)(Math.random()*2)+1;
+        Random rand = new Random();
+        int hunDragon = rand.nextInt(1)+1;
         if (hunDragon == dec) {
         	//eats player
         	System.out.println("You approach the cave...");
@@ -71,14 +89,31 @@ public class DragonCave {
         	}
         //ask if the user wishes to play again
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Would you like to play again? (y or n)");
+        String answer = "";
 		
+
+        /*
 		while (!scanner.hasNext("[yn]")) { //This line ensures that the user inputed y or n, if not, it'll continue to ask for the right input
 			System.out.println("Not valid input, please input 'y' or 'n'");
 			scanner.next();
 		}
-		
-		String answer = scanner.next();
+        String answer = scanner.next();
+		*/
+
+        //replacement for lines of code from above in Week 1, ensuring user enters y or n
+        do{
+            try {
+                System.out.println("Would you like to play again? (y or n)");
+                answer = scanner.nextLine();
+            } catch (Exception e) {
+                System.out.println("Idk how you got here"); //honestly don't know how you'd get this outide of control-something since everything else would be a string
+            }
+            if (!answer.equals("y") && !answer.equals("n")){ //ensures user enters y or n
+                System.out.println("Please input 'y' or 'n'");
+            }
+        }while(!answer.equals("y") && !answer.equals("n")); //do it until a valid answer is given
+
+
 		if (answer.equals("y")) dragonCave();
 		else System.out.println("Game Over");
 		sc.close();
