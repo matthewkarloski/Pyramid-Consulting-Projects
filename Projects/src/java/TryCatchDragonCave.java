@@ -6,13 +6,14 @@ import java.util.Scanner;
 //Dragon Cave
 
 public class TryCatchDragonCave {
+    /*
     public static void main(String[] args) throws Exception {
-        /*This is the same as Dragon cave, but try catch is used for user inputs
-         */
+        //This is the same as Dragon cave, but try catch is used for user inputs
+
         dragonCave();
     }
-
-    public static void dragonCave() throws InterruptedException{
+*/
+    public boolean dragonCave() throws InterruptedException{
         //We will give some story
         //next we'll need to get input from the user
         //take the input, and decide whether they get eaten or not
@@ -112,5 +113,6 @@ public class TryCatchDragonCave {
         else System.out.println("Game Over");
         sc.close();
         scanner.close();
+        return true;
     }
 }

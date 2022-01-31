@@ -7,6 +7,7 @@ import java.util.Scanner;
 
 
 public class DragonCave {
+
     public static void main(String[] args) throws Exception {
         /*In this game, the player is in a land full of dragons. The dragons all live in caves
          * with their large piles o collected treasure. Some dragons are friendly and share their
