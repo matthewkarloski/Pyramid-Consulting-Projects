@@ -1,4 +1,5 @@
-package Week1;
+package main.java.mattkarl;
+
 import java.util.Random;
 import java.util.Scanner;
 
