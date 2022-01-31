@@ -1,4 +1,5 @@
 package Week1;
+import java.util.Random;
 import java.util.Scanner;
 
 /* Guess the number
@@ -27,7 +28,8 @@ public class GuesstheNumber {
 	public static void numberGuess(String name) {
 		System.out.println(String.format("Well %s, I am thinking of a number between 1 and 20", name));
 		//get a random number between 1 and 20
-		int solution = (int)(Math.random()*20)+1;
+        Random rand = new Random();
+        int solution = rand.nextInt(20)+1;
 		boolean usercorrect = false;
 		Scanner sc2 = new Scanner(System.in);
 		

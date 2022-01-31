@@ -5,7 +5,7 @@ import java.util.Scanner;
 //By Matthew Karloski
 //1/26/2022
 //Dragon Cave
-//Current bug if someone doesn't enter in a 1 or 2
+
 
 public class DragonCave {
     public static void main(String[] args) throws Exception {
@@ -48,7 +48,8 @@ public class DragonCave {
         
         //make the hungry dragon random number between 1 and 2, so the user can never guess the 
         //friendly dragon dragon even after multiple attempts
-        int hunDragon = (int)(Math.random()*2)+1;
+        Random rand = new Random();
+        int hunDragon = rand.nextInt(2)+1;
         if (hunDragon == dec) {
         	//eats player
         	System.out.println("You approach the cave...");

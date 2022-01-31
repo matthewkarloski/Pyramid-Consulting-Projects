@@ -6,15 +6,10 @@ import java.util.Scanner;
 //By Matthew Karloski
 //1/26/2022
 //Dragon Cave
-//Current bug if someone doesn't enter in a 1 or 2
 
 public class TryCatchDragonCave {
     public static void main(String[] args) throws Exception {
-        /*In this game, the player is in a land full of dragons. The dragons all live in caves
-         * with their large piles o collected treasure. Some dragons are friendly and share their
-         * treasure. Other dragons are hungry and eat anyone who enters their cave. The player
-         * approaches 2 caves, 1 with a friendly dragon and the other with a hungry dragon, but
-         * doesn't know which dragon is in which cave. The player must choose between the two.
+        /*This is the same as Dragon cave, but try catch is used for user inputs
          */
         dragonCave();
     }
@@ -50,6 +45,7 @@ public class TryCatchDragonCave {
         System.out.println();
         */
 
+        //replacing above code with this to include the try catch statement
         do {
             System.out.println("Which cave will you go into? (1 or 2)");
             try {
@@ -67,7 +63,7 @@ public class TryCatchDragonCave {
         //make the hungry dragon random number between 1 and 2, so the user can never guess the 
         //friendly dragon dragon even after multiple attempts
         Random rand = new Random();
-        int hunDragon = rand.nextInt(1)+1;
+        int hunDragon = rand.nextInt(2)+1;
         if (hunDragon == dec) {
         	//eats player
         	System.out.println("You approach the cave...");
@@ -106,7 +102,7 @@ public class TryCatchDragonCave {
                 System.out.println("Would you like to play again? (y or n)");
                 answer = scanner.nextLine();
             } catch (Exception e) {
-                System.out.println("Idk how you got here"); //honestly don't know how you'd get this outide of control-something since everything else would be a string
+                System.out.println("Please input 'y' or 'n'"); //honestly don't know how you'd get this outide of control-something since everything else would be a string
             }
             if (!answer.equals("y") && !answer.equals("n")){ //ensures user enters y or n
                 System.out.println("Please input 'y' or 'n'");
