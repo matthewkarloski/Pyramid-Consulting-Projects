@@ -1,4 +1,4 @@
-package main.java.mattkarl;
+package mattkarl;
 
 import java.util.Random;
 import java.util.Scanner;
