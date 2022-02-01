@@ -1,10 +1,6 @@
 import java.util.Random;
 import java.util.Scanner;
 
-//By Matthew Karloski
-//1/26/2022
-//Dragon Cave
-
 public class TryCatchDragonCave {
     /*
     public static void main(String[] args) throws Exception {
