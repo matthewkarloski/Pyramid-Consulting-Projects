@@ -1,7 +1,6 @@
 //By Matthew Karloski
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -12,12 +11,6 @@ public class Hangman {
     while hangman hasn't hanged, get user input, if right, show the right letter,
     else add a piece to hangman
 
-    To do:
-    -asks if you want to play again at the end
-    -ensures user doesn't input the same letter twice
-    -ensures the user input is lowercase
-    -ensures the user input is 1 character long and a letter
-    -Make a JUnit test for this
      */
 
     //Prints out the hangman picture. misses are how many times it has missed so far
@@ -61,7 +54,7 @@ public class Hangman {
 
     }
 
-
+    //Runs the game
     public void hangman(Scanner scanner){
         System.out.println("H A N G M A N");
         //Create "dictionary"
@@ -87,12 +80,17 @@ public class Hangman {
         for (int i = 0; i <solution.length(); i++){
             usersees.add('_');
         }
-        int misses = 0;
-        //While not hung
-        boolean usercompleted;
 
-        //printout thepic
+        int misses = 0;
+        boolean usercompleted; //While not hung
+        ArrayList<Character> pastguesses = new ArrayList<>(); // creates list of all past letters user gave
+        ArrayList<Character> missedletters = new ArrayList<>();//creates list of all past missed letters user gave
+
+        //printout the pic to start
         hangmanPic(misses);
+        System.out.print("Missed Letters: ");
+        System.out.println();
+
         for (Character i : usersees) {
             System.out.print(i);
         }
@@ -102,12 +100,27 @@ public class Hangman {
         do { //need to get out when they are right
             //ask for input (make it lowercase)
             char userguess = '-';
-            try {
-                System.out.println("Guess a letter.");
-                userguess = scanner.next().charAt(0);
-            }catch (Exception e){
-                System.out.println("Invalid input");
-            }
+            String struserguess = "";
+            do {
+                try {
+                    System.out.println("Guess a letter.");
+                    struserguess = scanner.nextLine();
+                    userguess = struserguess.charAt(0);
+                } catch (Exception e) {
+                    System.out.println("Invalid input");
+                }
+                //lowercase it
+                userguess = Character.toLowerCase(userguess);
+                //checks if already guessed that letter and that it is only 1 valid letter
+                if (!struserguess.matches("[A-Za-z]{1}")){
+                    System.out.println("Invalid input, please guess a single letter");
+                }else if (pastguesses.contains(userguess)) {
+                    System.out.println("You've already guessed that letter. Choose again.");
+                }
+            }while(pastguesses.contains(userguess) || !struserguess.matches("[A-Za-z]{1}"));
+            pastguesses.add(userguess);
+
+
             //check to see if input can be added in solution
             ArrayList<Integer> indexes = new ArrayList<>();
             indexes = checkletter(userguess, solution);
@@ -116,34 +129,70 @@ public class Hangman {
                 usersees = changeCorrectLetters(usersees, indexes, userguess);
             }else {
                 //if can't add 1 to misses
+                missedletters.add(userguess);
                 misses++;
             }
 
-            //print out the pic
+            //print out the pic to show result
             hangmanPic(misses);
+            System.out.print("Missed Letters: ");
+            for (char i : missedletters){
+                System.out.print(i + " ");
+            }
+            System.out.println();
             for (Character i : usersees) {
                 System.out.print(i);
             }
             System.out.println();
             System.out.println();
+
             //checks if user correctly guessed the word
             usercompleted = true;
             for (char i : usersees){
-                if (i == '_'){
+                if (i == '_') {
                     usercompleted = false;
+                    break;
                 }
             }
         }while (misses != 7 && !usercompleted);
-        //repeat
+
+
         //if the misses reached 7, they failed. If not, they passed
         if (misses<7){
             //they passed
             System.out.printf("Yes! The secret word is \"%s\"! You have won!", solution);
+            System.out.println();
         }else{
             System.out.printf("Sorry, you lost! The secret word was \"%s\"!", solution);
-
+            System.out.println();
         }
 
+        //figure out if they want to play again
+        Scanner sc = new Scanner(System.in);
+        if(playAgain(sc)){
+            hangman(scanner);
+        }else{
+            System.out.println("Game Over");
+        }
+        sc.close();
+    }
+
+    //Finds out whether the user wants to play again or not
+    public boolean playAgain(Scanner scanner){
+        String answer = "";
+        do{
+            try {
+                System.out.println("Would you like to play again? (y or n)");
+                answer = scanner.nextLine();
+            } catch (Exception e) {
+                System.out.println("Please input 'y' or 'n'"); //honestly don't know how you'd get this outide of control-something since everything else would be a string
+            }
+            if (!answer.equals("y") && !answer.equals("n")){ //ensures user enters y or n
+                System.out.println("Please input 'y' or 'n'");
+            }
+        }while(!answer.equals("y") && !answer.equals("n")); //do it until a valid answer is given
+
+        return answer.equals("y");//If yes, return true
     }
 
 

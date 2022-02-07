@@ -8,7 +8,5 @@ public class RunHangman {
         hang.hangman(scanner);
         scanner.close();
 
-
-
     }
 }
