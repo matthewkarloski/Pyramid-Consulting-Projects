@@ -42,7 +42,7 @@ class HangmanTest {
             add('_');
             add('_');
             add('_');
-        }};//Just ______s 
+        }};//Just ______s
     }
 
 

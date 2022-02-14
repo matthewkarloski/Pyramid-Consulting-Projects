@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="3685433d-c5b6-4e0c-acae-75387566e6a4" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Projects/src/java/Hangman.java" beforeDir="false" afterPath="$PROJECT_DIR$/Projects/src/java/Hangman.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Projects/src/test/HangmanTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/Projects/src/test/HangmanTest.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
