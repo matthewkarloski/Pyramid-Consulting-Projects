@@ -10,6 +10,7 @@ public class Human {
     private int defense;
     final int maxHealth;
     ArrayList<Item> inventory;
+    ArrayList<Item> drops;
     final int maxinventory;
 
     public Human (int health, int strength){
@@ -24,6 +25,8 @@ public class Human {
         this.col = 4;
         this.health = health;
         this.strength = strength;
+        this.drops = new ArrayList<>();
+
     }
 
     public int getRow() {
@@ -67,7 +70,7 @@ public class Human {
     }
 
     public String toString(){
-        return "@";
+        return "H";
     }
 
     //checks that it won't hit a wall
@@ -140,7 +143,7 @@ public class Human {
         return true;
     }
 
-    public ArrayList<Item> loot(Item i, Scanner s, ArrayList<Item> itemsonboard){
+    public boolean loot(Item i, Scanner s, ArrayList<Item> itemsonboard){
         String answer = "";
         do{
             try {
@@ -158,14 +161,21 @@ public class Human {
         }while(!answer.equals("y") && !answer.equals("n")); //do it until a valid answer is given
 
         if (answer.equals("y")){
-            this.addItemToInventory(i);
-            itemsonboard.remove(i);
+            if(this.addItemToInventory(i)) {
+                itemsonboard.remove(i);
+                return true;
+            }
         }
 
-        return itemsonboard;
+        return false;
 
     }
-
+    public void drop(int index){
+        Item i = this.inventory.get(index);
+        this.inventory.set(index, new Item());
+        System.out.println("You dropped " + i.getName());
+        this.drops.add(i);
+    }
     public boolean usePotion(){
         boolean foundpotion = false;
         for (Item i : this.inventory){

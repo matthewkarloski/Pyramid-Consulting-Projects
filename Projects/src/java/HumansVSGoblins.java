@@ -42,8 +42,6 @@ public class HumansVSGoblins {
             -need a way to equip/unequip loot
                 -make first 5 slots the equipped, last 15 spots are unequipped/potions
             -print inventory when 'i' is pressed
-        -Have goblin drop some loot
-            -if human on top of item, have the option to put in inventory (press f to loot)
         -Once combat is over and human won. Spawn a chest randomly on map (not on human though)
             -once chest is collected, randomly spawn another goblin at edge of the map to start a combat loop
                 -don't spawn at or next to player
@@ -61,12 +59,23 @@ public class HumansVSGoblins {
      */
     /*
     Still need to do:
-    -loot system
-        -chest spawns when goblin killed
-        -human drops items
-    -goblin respawns when chest looted
     -goblin moves toward human at end of human turn
-    -Fix scanner bug 'invalid input'
+        -if below human go up
+        -if above human, go down
+        -etc.
+        -Have turn be a boolean
+            -goblin only moves if boolean is true
+            -map only prints if boolean is true
+        -Move check if human dead until after goblin moves, incase human dies from combat with goblin
+    -Fix scanner bug 'invalid input' in inventory
+        -add another scanner
+    -Add info to GUI
+        -Strength
+        -HP
+        -Defense
+        -Legend (H: Human(You), G: Goblin, ^: Item, =: Chest)
+        -Command help(w: up a:left s:down d: right r:use potion i:open inventory q:quit game)
+    -Potential bug: Selecting empty slot in inventory
      */
 
     //makes basic board. No human or goblin in it yet. Just walls and empty land
@@ -91,14 +100,14 @@ public class HumansVSGoblins {
 
     //Puts the human on the board. If goblin there, put it on the board. If chest, put it on as well. Then prints everything out
     public void printGame(Goblin goblin, Human human, String[][] board, ArrayList<Item> items, int chestrow, int chestcol, boolean goblinthere, boolean chestthere){
-        board[human.getRow()][human.getCol()] = human.toString();
-        if (goblinthere)
-            board[goblin.getRow()][goblin.getCol()] = goblin.toString();
+        for (Item item : items){
+            board[item.getRow()][item.getCol()] = item.toString();
+        }
         if (chestthere)
             board[chestrow][chestcol] = "=";
-        for (Item item : items){
-            board[item.getCol()][item.getRow()] = item.toString();
-        }
+        if (goblinthere)
+            board[goblin.getRow()][goblin.getCol()] = goblin.toString();
+        board[human.getRow()][human.getCol()] = human.toString();
         //print the board
         for (String[] strings : board) {
             for (String string : strings) { //prints row
@@ -108,6 +117,7 @@ public class HumansVSGoblins {
         }
     }
 
+    //Creates the potential drops that enemies and chests may have.
     private ArrayList<Item> potentialDrops(){
         ArrayList<Item> drops = new ArrayList<>();
         drops.add(new Item("Weapon", "Bronze Sword", 3));
@@ -119,7 +129,7 @@ public class HumansVSGoblins {
         drops.add(new Item("Chestplate", "Bronze Chestplate", 3));
         drops.add(new Item("Chestplate", "Iron Chestplate", 6));
         drops.add(new Item("Chestplate", "Steel Chestplate", 12));
-        drops.add(new Item("Legging", "Bronze Leggings", 2));
+        drops.add(new Item("Leggings", "Bronze Leggings", 2));
         drops.add(new Item("Leggings", "Iron Leggings", 4));
         drops.add(new Item("Leggings", "Steel Leggings", 8));
         drops.add(new Item("Shoes", "Bronze Shoes", 3));
@@ -130,25 +140,39 @@ public class HumansVSGoblins {
         return drops;
     }
 
+    public ArrayList<Item> removeFromDrops(ArrayList<Item> drops, int i){
+        if (!drops.get(i).getType().equals("Potion")) {
+            drops.remove(i);
+        }
+        return drops;
+    }
+
     //plays the game
     public void playGame(Scanner scanner){
         //create human, board, 1st goblin
         Human h = new Human(60, 3);
-        Goblin g = new Goblin(40, 1);
-        String[][] board = board();
-        ArrayList<Item> potentialdrops = potentialDrops();
-        ArrayList<Item> itemsonboard = new ArrayList<>();
-        boolean goblinalive = true;
+        int goblinhp = 40; //initial goblin hp
+        int goblinstr = 1; //initial goblin strength
+        Goblin g = new Goblin(goblinhp, goblinstr);
+        String[][] board = board(); //the board
+        ArrayList<Item> potentialdrops = potentialDrops(); //potential drops from enemies/chests
+        ArrayList<Item> itemsonboard = new ArrayList<>(); //drops from enemies
+        ArrayList<Item> chest = new ArrayList<>(); //chest with 2 random items in it after enemy dies
+        boolean goblinalive = true; //is goblin alive
+        boolean chestthere = false; //is chest there
+        boolean humandead = false; //determine if human is dead, and whether the player would like to start again
+        int row = 0; //row col for chest items
+        int col = 0;
 
         Scanner invScan = new Scanner(System.in); //scanner for inventory
         Scanner s = new Scanner(System.in); //scanner for quitting
         boolean quitcheck = false;//will change to true if user wants to quit
-        printGame(g, h, board, itemsonboard, 1, 1, true, false);
+        printGame(g, h, board, itemsonboard, row, col, goblinalive, chestthere);//initially print the game
 
         //get input from the user on what they want to do
         while (true){
             String usercommand = "";
-            boolean check = true;
+            boolean check; //checks if user hits a wall
 
             //get the command from the user on what to do
             do {
@@ -163,13 +187,13 @@ public class HumansVSGoblins {
                     System.out.println("Invalid input");
                 }
                 //checks if valid command and only 1 letter
-                if (!usercommand.matches("[wasdiqrh]{1}")){
-                    System.out.println("Invalid input, please guess a single letter");
+                if (!usercommand.matches("[wasdiqr]{1}")){
+                    System.out.println("Invalid input");
                 }else if(usercommand.matches("[wasd]{1}") && !h.notOutOfBounds(usercommand, board)){ //makes sure user doesn't hit a wall
                     System.out.println("You smash your head against a wall, pick a different direction to move");
                     check = false;
                 }
-            }while(!usercommand.matches("[wasdiqrh]{1}") || !check);
+            }while(!usercommand.matches("[wasdiqr]{1}") || !check);
 
 
             switch (usercommand) {
@@ -177,7 +201,7 @@ public class HumansVSGoblins {
                 case "w": //move up
                     board[h.getRow()][h.getCol()] = "*"; //resets the board
                     if (h.getRow() - 1 == g.getRow() && h.getCol() == g.getCol()) {//checks to see if would hit goblin
-                        combat(h, g, true);
+                        System.out.println(combat(h, g, true));
                     } else { //if not, move instead of attacking
                         h.setRow(h.getRow() - 1);
                     }
@@ -185,7 +209,7 @@ public class HumansVSGoblins {
                 case "a": //move left
                     board[h.getRow()][h.getCol()] = "*";
                     if (h.getCol() - 1 == g.getCol() && h.getRow() == g.getRow()) {
-                        combat(h, g, true);
+                        System.out.println(combat(h, g, true));
                     } else {
                         h.setCol(h.getCol() - 1);
                     }
@@ -193,7 +217,8 @@ public class HumansVSGoblins {
                 case "d": //move right
                     board[h.getRow()][h.getCol()] = "*";
                     if (h.getCol() + 1 == g.getCol() && h.getRow() == g.getRow()) {
-                        combat(h, g, true);
+                        System.out.println(combat(h, g, true));
+
                     } else {
                         h.setCol(h.getCol() + 1);
                     }
@@ -201,7 +226,8 @@ public class HumansVSGoblins {
                 case "s": //move down
                     board[h.getRow()][h.getCol()] = "*";
                     if (h.getRow() + 1 == g.getRow() && h.getCol() == g.getCol()) {
-                        combat(h, g, true);
+                        System.out.println(combat(h, g, true));
+
                     } else {
                         h.setRow(h.getRow() + 1);
                     }
@@ -210,53 +236,133 @@ public class HumansVSGoblins {
                     //if r, use potion
                     //if player does not have potion, don't use it and don't use up player's turn
                     h.usePotion();
-                    System.out.println("need to make potions area");
                     break;
                 case "i":
                     //if i, open inventory
                     inventory(h, invScan);
+                    //put drops on board
+                    //find out what the user dropped, if any
+                    //difference between (potential drops, items on board, chest, and inventory) and potentialdrops()
+                    if (!h.drops.isEmpty()){
+                        for (Item i : h.drops){
+                            i.setCol(h.getCol());
+                            if(h.getRow()>2) i.setRow(h.getRow()-1);
+                            else i.setRow(h.getRow()+1);
+                            itemsonboard.add(i);
+                        }
+                        h.drops.clear();
+                    }
                     break;
                 //if q, quit game
                 case "q":
                     //confirm they want to leave, if yes, leave the game and exit the method
-                    quitcheck = playAgain(s);
+                    quitcheck = yes(s);
                     break;
                 default:
                     System.out.print("Something went wrong while moving");
                     break;
             }
             if (quitcheck) break; //quit game if user told you to
+            if (h.getHealth() == 0){ //player died, game over, ask if they want to start again
+                System.out.println("Game over");
+                humandead = true;
+                break;
+            }
             if (g.getHealth() == 0 && goblinalive){ //if goblin died, make him drop a random droppable where he was, and make him disappear
                 Random rand = new Random();
-                int i = rand.nextInt(potentialdrops.size()-1)+1;
+                int i = rand.nextInt(potentialdrops.size());
                 Item drop = potentialdrops.get(i);
-                if (!potentialdrops.get(i).getType().equals("Potion"))
-                    potentialdrops.remove(i);
+                potentialdrops = removeFromDrops(potentialdrops, i); //remove the item from potential drops unless potion
                 drop.setCol(g.getCol());
                 drop.setRow(g.getRow());
                 itemsonboard.add(drop);
+                System.out.println("Goblin dropped " + drop.getName() + "!");
                 g.setCol(0);
                 g.setRow(0);
                 goblinalive=false;
+                //spawns chest, add 2 random items to it
+                i = rand.nextInt(potentialdrops.size());
+                Item chestdrop = potentialdrops.get(i);
+                do {
+                    row = rand.nextInt(board.length-2)+1;
+                    col = rand.nextInt(board[0].length-2)+1;
+
+                }while (row ==h.getRow() && col == h.getCol());
+                chestdrop.setRow(row);
+                chestdrop.setCol(col);
+                chest.add(chestdrop);
+                potentialdrops = removeFromDrops(potentialdrops, i); //remove the item from potential drops unless potion
+                i = rand.nextInt(potentialdrops.size());
+                chestdrop = potentialdrops.get(i);
+                chestdrop.setRow(row);
+                chestdrop.setCol(col);
+                chest.add(chestdrop);
+                potentialdrops = removeFromDrops(potentialdrops, i); //remove the item from potential drops unless potion
+                chestthere = true;
             }
             if (!itemsonboard.isEmpty()) {
                 for (int i = 0; i < itemsonboard.size(); i++) {
                     if (itemsonboard.get(i).getCol() == h.getCol() && itemsonboard.get(i).getRow() == h.getRow()) {
-                        itemsonboard = h.loot(itemsonboard.get(i), s, itemsonboard);
+                        if(h.loot(itemsonboard.get(i), s, itemsonboard))//if looted, remove item from board
+                            i--;
+                            //itemsonboard.remove(i);
                     }
                 }
             }
+            if (chestthere){ //chest is out there
+                if (chest.get(0).getCol() == h.getCol() && chest.get(0).getRow() == h.getRow()){ //if human is standing on chest
+                    //loot the chest
+                    ArrayList<Item> temp = new ArrayList<>(); //temp "chest" storing everything that isn't looted
+                    for (int i = 0; i < chest.size(); i++){
+                        Scanner sc1= new Scanner(System.in);
+                        if (!h.loot(chest.get(i),sc1, chest)){ //if looted, remove item from chest
+                            temp.add(chest.get(i));
+                        }else{
+                            i--;
+                        }
+                    }
+                    //take out the chest
+                    potentialdrops.addAll(temp);
+                    chest.clear();
+                    chestthere = false;
+                    //respawn the goblin
+                    Random r = new Random();
+                    do {
+                        g.setRow(r.nextInt(board.length - 2) + 1);
+                        g.setCol(r.nextInt(board[0].length - 2) + 1);
+                    }while(g.getRow() == h.getRow() && g.getCol() == h.getCol());
+                    goblinalive = true;
+                    //goblin gets either boost in HP or strength
+                    int i = r.nextInt(2);
+                    if (i == 0){
+                        goblinhp += 5;
+                    }else {
+                        goblinstr++;
+                    }
+                    g.setHealth(goblinhp);
+                    g.setStrength(goblinstr);
+                }
+
+            }
+
                 //if r, use potion
                     //if player does not have potion, don't use it and don't use up player's turn
             //goblin then moves towards user
                 //check to be sure combat isn't initiated
             //repeat last 2 main things
-            printGame(g, h, board, itemsonboard, 1, 1, goblinalive, false);
+            printGame(g, h, board, itemsonboard, row, col, goblinalive, chestthere);
+        }
+
+        if (humandead){
+            //ask if they want to play again
+            if(yes(s))
+               playGame(scanner);
+
         }
     }
 
     //Finds out whether the user really wants to quit or not
-    public boolean playAgain(Scanner scanner){
+    public boolean yes(Scanner scanner){
         String answer = "";
         do{
             try {
@@ -273,7 +379,7 @@ public class HumansVSGoblins {
         return answer.equals("y");//If yes, return true
     }
 
-    //does the combat
+    //does the combat. Returns whether anyone died. If not, it's an empty string
     public String combat(Human human, Goblin goblin, boolean humaninitcom){
         Random r = new Random();
         if (humaninitcom){ //if human started, they attack first
@@ -317,21 +423,8 @@ public class HumansVSGoblins {
         }
     }
 
+    //deals with the inventory system
     public void inventory(Human human, Scanner s){
-        //gives prompt on whether they want to equip/unequip/exit inventory
-            //if e - equip
-                //ask what they want to equip, take the slot number
-                    //if potion, can't equip potion
-                    //else, switch with correct equipped slot
-                    //change stats accordingly
-            //if u - unequip
-                //ask what they want to unequip (takes number of the slot)
-                    //moves item to the next empty storage slot
-                        //if no empty spot, ask user if they want to drop item
-                        //if drop, drop next to human
-                        //else go back to main inventory "menu"
-            //if q - exit
-                //exits inventory, goes back to game
 
         //should they select an item, give it it's type, name, and stats. Then ask whether they want to equip/unequip that item
         human.printinventory();
@@ -376,22 +469,29 @@ public class HumansVSGoblins {
                     s.next();
                 }
                 String answer = s.next();
-                if (answer.equals("u")){
+                if (answer.equals("u")){ //unequip item
                     human.unequip(num-1);
                 }
             }else{ //selected an unequipped item
-                System.out.println("e: equip q: back");
-                while (!s.hasNext("[eq]")) { //This line ensures that the user inputed y or n, if not, it'll continue to ask for the right input
-                    System.out.println("Not valid input, please input 'u' or 'q'");
+                System.out.println("e: equip q: back d: drop");
+                while (!s.hasNext("[eqd]")) { //This line ensures that the user inputed y or n, if not, it'll continue to ask for the right input
+                    System.out.println("Not valid input, please input 'e', 'd', or 'q'");
                     s.next();
                 }
                 String answer = s.next();
-                if (answer.equals("e")){
-                    human.equip(num-1);
+                switch (answer){
+                    case "e":
+                        human.equip(num-1);
+                        break;
+                    case "d":
+                        human.drop(num-1);
+                        break;
+                    default:
+                        break;
                 }
             }
         }
-        if (!input.equals("q")){
+        if (!input.equals("q")){ //so long as not q, stay in inventory
             inventory(human, s);
         }
 

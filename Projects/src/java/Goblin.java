@@ -43,7 +43,7 @@ public class Goblin {
     }
 
     public String toString(){
-        return "o";
+        return "G";
     }
 
 }
