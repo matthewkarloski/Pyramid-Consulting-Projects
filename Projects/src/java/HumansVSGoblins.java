@@ -18,59 +18,20 @@ public class HumansVSGoblins {
         -goblins pursue player
     -Add JUnit testing
      */
-
-    /*
-    what to do:
-        -Keep track of goblin/human location with int attributes, row, col
-            -Can't go below 1 (Hits wall)
-            -can't go above max (hits wall)
-            -Should they collide (on top of each other), initiate combat, but don't move the characters
-                -each have a strength attribute, random from -2/+2 that attribute, then minus defense to decide damage
-                    -lowest an attack can be is 0, which if true should be considered a "miss"
-                    -if goblin health is below 0, human wins and game continues
-                    -else if human health is below 0, human dies and the game ends
-        -Inventory system will be ArrayList<Items>. Each Item will have a name, type, and stat attribute
-            -armor type(add to defense attribute. Iron, steel, diamond variants):
-                -chestplate
-                -helmet
-                -legs
-                -feet
-            -weapon type(add to strength. Iron, steel, diamond variants):
-                -sword
-            -potion type (add health. Make more common.)
-            -don't spawn something the human has, except potions
-            -need a way to equip/unequip loot
-                -make first 5 slots the equipped, last 15 spots are unequipped/potions
-            -print inventory when 'i' is pressed
-        -Once combat is over and human won. Spawn a chest randomly on map (not on human though)
-            -once chest is collected, randomly spawn another goblin at edge of the map to start a combat loop
-                -don't spawn at or next to player
-        -each turn, the goblin moves towards the human after the human moves
-            -if row or col attribute for goblin is higher than human, move -1 that attribute
-            -if lower, move +1 that attribute
-        -each turn
-            -player decides to move, heal, or leave the game
-                -move- wasd
-                    ad - +/- 1 from col (move left right)
-                    ws - +/- 1 from row (move up down)
-                -inventory - i - does not waste a turn unequipping/equipping. Can access it at beginning of turn
-                -use potion - r - heals player
-                -leave game - q - quits game
-     */
     /*
     Still need to do:
     -JUnit test
      */
-    private Human h;
-    private Goblin g;
-    private String[][] board;
-    private ArrayList<Item> potentialdrops;
-    private ArrayList<Item> itemsonboard;
-    private ArrayList<Item> chest;
-    private boolean goblinalive;
-    private boolean chestthere;
-    private int row;
-    private int col;
+    protected Human h;
+    protected Goblin g;
+    protected String[][] board;
+    protected ArrayList<Item> potentialdrops;
+    protected ArrayList<Item> itemsonboard;
+    protected ArrayList<Item> chest;
+    protected boolean goblinalive;
+    protected boolean chestthere;
+    protected int row;
+    protected int col;
 
 
     //makes basic board. No human or goblin in it yet. Just walls and empty land
@@ -554,7 +515,7 @@ public class HumansVSGoblins {
                     h.unequip(num-1);
                 }
             }else{ //selected an unequipped item
-                if (!h.inventory.get(num).getType().equals("Potion")) { //if not potion
+                if (!h.inventory.get(num-1).getType().equals("Potion")) { //if not potion
                     System.out.println("e: equip q: back d: drop");
                     while (!s.hasNext("[eqd]")) { //This line ensures that the user inputed y or n, if not, it'll continue to ask for the right input
                         System.out.println("Not valid input, please input 'e', 'd', or 'q'");
@@ -570,7 +531,7 @@ public class HumansVSGoblins {
                 }else{
                     System.out.println("r: use potion q: back");
                     while (!s.hasNext("[rq]")) { //This line ensures that the user inputed y or n, if not, it'll continue to ask for the right input
-                        System.out.println("Not valid input, please input 'e', 'd', or 'q'");
+                        System.out.println("Not valid input, please input 'r', or 'q'");
                         s.next();
                     }
                     String answer = s.next();
