@@ -1,54 +1,45 @@
-//By Matthew Karloski
-
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-public class Hangman {
+public class HangmanFunctional {
+    /*
+    Todo:
+        -Add JUnit testing
+     */
+
 
     //Prints out the hangman picture. misses are how many times it has missed so far
-    public void hangmanPic(int misses){
-        System.out.println(" +--------+");
-        if (misses > 0)
-        System.out.println(" O        |");
+    public void hangmanPic(int misses) throws IOException {
+        String file;
+        if (misses == 0)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\0misses.txt";
+        else if (misses == 1)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\1miss.txt";
+        else if (misses == 2)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\2misses.txt";
+        else if (misses == 3)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\3misses.txt";
+        else if (misses == 4)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\4misses.txt";
+        else if (misses == 5)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\5misses.txt";
+        else if (misses == 6)
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\6misses.txt";
+        else
+            file = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\7misses.txt";
 
-        //Second level
-        if (misses == 2)
-        System.out.println(" |        |");
-        if (misses == 3)
-        System.out.println("/|        |");
-        if (misses >3)
-        System.out.println("/|\\       |");
-        //third level
-        if (misses>4)
-        System.out.println(" |        |");
-        //fourth
-        if (misses == 6)
-        System.out.println("/         |");
-        if (misses >6)
-        System.out.println("/ \\       |");
-
-
-        //printing out the empty levels
-        if (misses == 0){ //all empty
-            for (int i = 0; i<4; i++)
-                System.out.println("          |");
-        }else if(misses == 1){ //head there
-            for (int i = 0; i<3; i++)
-                System.out.println("          |");
-        }else if(misses == 2 || misses == 3 || misses ==4) { //If arms are there
-            for (int i = 0; i < 2; i++)
-                System.out.println("          |");
-        }else if (misses ==5) //if it reaches the torso
-            System.out.println("          |");
-
-        //fifth
-        System.out.println("        =====");
-
+        Files.lines(Paths.get(file))
+                .forEach(System.out :: println);
     }
 
     //Runs the game
-    public void hangman(Scanner scanner){
+    public void hangman(Scanner scanner) throws IOException {
         System.out.println("H A N G M A N");
         //Create "dictionary"
         ArrayList<String> words = new ArrayList<String>() {
@@ -69,11 +60,13 @@ public class Hangman {
         //get a random word
         Random rand = new Random();
         String solution = words.get(rand.nextInt(words.size()-1)+1);
-        ArrayList<Character> usersees = new ArrayList<Character>();
-        for (int i = 0; i <solution.length(); i++){
-            usersees.add('_');
-        }
+        ArrayList<Character> usersees = new ArrayList<>();
+        ArrayList<Character> finalUsersees = usersees;
+        Stream.of(solution.split(""))
+                .forEach(x -> finalUsersees.add('_'));
+        usersees = finalUsersees;
 
+        String filename = "C:\\Users\\matthew\\Documents\\GenSpark\\Pyramid-Consulting-Projects\\Projects\\HangmanFiles\\HighScores.txt";
         int misses = 0;
         boolean usercompleted; //While not hung
         ArrayList<Character> pastguesses = new ArrayList<>(); // creates list of all past letters user gave
@@ -84,9 +77,8 @@ public class Hangman {
         System.out.print("Missed Letters: ");
         System.out.println();
 
-        for (Character i : usersees) {
-            System.out.print(i);
-        }
+        usersees
+                .forEach(System.out :: print);
         System.out.println();
 
         //Now start the loop
@@ -129,24 +121,16 @@ public class Hangman {
             //print out the pic to show result
             hangmanPic(misses);
             System.out.print("Missed Letters: ");
-            for (char i : missedletters){
-                System.out.print(i + " ");
-            }
+            missedletters.forEach(x -> System.out.print(x + " "));
             System.out.println();
-            for (Character i : usersees) {
-                System.out.print(i);
-            }
+            usersees
+                    .forEach(System.out :: print);
             System.out.println();
             System.out.println();
 
             //checks if user correctly guessed the word
             usercompleted = true;
-            for (char i : usersees){
-                if (i == '_') {
-                    usercompleted = false;
-                    break;
-                }
-            }
+            usercompleted = usersees.stream().noneMatch(x -> x.equals('_'));
         }while (misses != 7 && !usercompleted);
 
 
@@ -160,6 +144,14 @@ public class Hangman {
             System.out.println();
         }
 
+        //Get name and say whether they got a high score
+        String name = "";
+        System.out.println("What is your name?");
+        Scanner s = new Scanner(System.in);
+        name = s.nextLine();
+
+        if (addCheckScores(filename, name, misses))
+            System.out.println("You have a high score!");
         //figure out if they want to play again
         Scanner sc = new Scanner(System.in);
         if(playAgain(sc)){
@@ -168,7 +160,47 @@ public class Hangman {
             System.out.println("Game Over");
         }
         sc.close();
+        s.close();
     }
+
+    public boolean addCheckScores(String filepath, String name, int score){
+        String tempfile = "temp.txt";
+        File oldFile = new File(filepath);
+        File newFile = new File(tempfile);
+        boolean highscore = false;
+        boolean nameinfile = false;
+
+        try{
+            FileWriter fw = new FileWriter(tempfile, true);
+            BufferedWriter bw = new BufferedWriter(fw);
+            PrintWriter pw = new PrintWriter(bw);
+            Scanner x = new Scanner(new File(filepath));
+            x.useDelimiter("[,\n]");
+            while(x.hasNext()){
+                String filename = x.next();
+                String filescore = x.next();
+                if (filename.equals(name)) {
+                    //if had less misses than previous times. If highscore, should always return true
+                    nameinfile = true;
+                    highscore = Integer.parseInt(filescore) > score;
+                }
+                pw.print(filename +"," + filescore + "\n");
+            }
+            if (!nameinfile) highscore = true; //if new name, it's a high score
+            pw.print(name + "," + score + "\n");
+            x.close();
+            pw.flush();
+            pw.close();
+            oldFile.delete();
+            File dump = new File(filepath);
+            newFile.renameTo(dump);
+        }catch (Exception e){
+            System.out.println("Something went wrong when editing file");
+            highscore = false;
+        }
+        return highscore;
+    }
+
 
     //Finds out whether the user wants to play again or not
     public boolean playAgain(Scanner scanner){
@@ -192,18 +224,16 @@ public class Hangman {
     //will take a letter, and check and see if it is in the solution and returns all indexes where it was located
     public ArrayList<Integer> checkletter(char c, String solution){
         ArrayList<Integer> indexesfound = new ArrayList<>();
-        for (int i = 0; i<solution.length(); i++){
-            if (solution.charAt(i) == c)
-                indexesfound.add(i);
+        IntStream.range(0, solution.length())
+                .filter(index -> solution.charAt(index) == c)
+                .forEach(indexesfound::add);
 
-        }
         return indexesfound;
     }
 
     //Changes to correct word
-    public ArrayList<Character> changeCorrectLetters(ArrayList<Character> solution, ArrayList<Integer> indexes, char c){
-        for (int i : indexes)
-            solution.set(i, c);
+    public ArrayList<Character> changeCorrectLetters(ArrayList<Character> solution, ArrayList<Integer> indexes, char c) {
+        indexes.forEach(x-> solution.set(x, c));
 
         return solution;
     }
